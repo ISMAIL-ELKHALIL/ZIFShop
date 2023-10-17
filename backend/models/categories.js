@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 
 const categorySchema = new Schema({
     category_name: { type: String, required: true, unique: true },
-    active: { type: Boolean },
+    active: { type: Boolean, required: true },
 })
 
 

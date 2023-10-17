@@ -1,16 +1,12 @@
 const { Schema, model } = require("mongoose");
 
 const orderSchema = new Schema({
-    sku: { type: String, required: true },
-    product_image: { type: String, required: true },
-    product_name: { type: String, required: true },
-    subcategory_id: { type: String },
-    short_description: { type: String },
-    long_description: { type: String },
+    customer_id: { type: String, required: true },
+    order_items: [],
+    order_date: { type: Date, required: true },
     price: { type: Number, required: true },
-    discount_price: { type: Number },
-    options: { type: Array },
-    active: { type: Boolean,},
+    cart_total_price: { type: Number, required: true },
+    status: { type: Boolean },
 });
 
 const orderModel = model("Order", orderSchema);
