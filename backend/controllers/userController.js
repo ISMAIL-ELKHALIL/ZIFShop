@@ -1,5 +1,5 @@
 // controllers/usersController.js
-const User = require('../models/User'); // Import your User model
+const { UserModel } = require('../models/User'); // Import your User model
 
 // Controller for handling user-related API endpoints
 const usersController = {
@@ -54,4 +54,4 @@ const usersController = {
     },
 };
 
-module.exports = {usersController};
+module.exports = { usersController };
