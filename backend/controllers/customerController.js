@@ -1,5 +1,5 @@
 //"use strict";
-const { CustomerModel } = require("../models/customers");
+const { CustomerModel } = require("../models/customersModel");
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
 const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
@@ -10,6 +10,7 @@ const customerController = {
   //Todo:Implementation for customer authentication
   //Todo: Ensure you validate the email and password, and respond with a token if successful
 
+  //? LOGIN CUSTOMER
   loginCustomer: async (req, res) => {
     const { email, password } = req.body;
 
@@ -63,6 +64,7 @@ const customerController = {
     }
   },
 
+  //? CREATE CUSTOMER
   createCustomer: async (req, res) => {
     try {
       const { first_name, last_name, email, password } = req.body;
@@ -84,6 +86,8 @@ const customerController = {
 
       //await newCustomer.save();
 
+      console.log("by ___ID", newCustomer._id);
+      console.log("by ID", newCustomer.id);
       return res.status(201).json(newCustomer);
     } catch (error) {
       return res
@@ -92,6 +96,7 @@ const customerController = {
     }
   },
 
+  //? GET ALL CUSTOMERS
   getAllCustomers: async (req, res) => {
     // Implementation for getting all customers with pagination and sorting
     // Ensure role-based access control
@@ -109,6 +114,7 @@ const customerController = {
     }
   },
 
+  //? SEARCH CUSTOMERS
   searchCustomers: async (req, res) => {
     // Extract the query parameters from the request
     const { first_name, last_name, email } = req.query;
@@ -138,7 +144,7 @@ const customerController = {
         .json({ error: "An error occurred while searching for customers" });
     }
   },
-
+  //? GET CUSTOMER BY ID
   getCustomerById: async (req, res) => {
     const { id } = req.params;
     if (!id) {
@@ -186,6 +192,7 @@ const customerController = {
 
   //TODO Watch how to work with JWT
 
+  //? DELETE CUSTOMER
   deleteCustomer: async (req, res) => {
     try {
       // Extract the token from the request headers
@@ -222,12 +229,12 @@ const customerController = {
         .json({ error: "An error occurred while deleting the customer data" });
     }
   },
-
+  //? GET CUSTOMER PROFILE
   getCustomerProfile: async (req, res) => {
     // Implementation for getting a customer's profile
     // Ensure role-based access control
   },
-
+  //? UPDATE CUSTOMER PROFILE
   updateCustomerProfile: async (req, res) => {
     // Implementation for updating a customer's profile
     // Ensure role-based access control
