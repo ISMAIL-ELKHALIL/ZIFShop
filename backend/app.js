@@ -1,19 +1,22 @@
 const express = require("express");
 const { urlencoded } = require("express");
-const { router } = require('./routes/router')
-const userRoutes = require("./routes/userRoutes")
-const customerRoutes = require("./routes/customerRoutes")
-
-
-
+const { router } = require("./routes/router");
+const helmet = require("helmet");
+const userRoutes = require("./routes/userRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 
 const app = express();
 
+//?Helmet helps secure Express apps by setting HTTP response headers.
+app.use(helmet());
+
 //? Middleware for parsing Body
 app.use(express.json());
-app.use(urlencoded({ extended: true }))
+app.use(urlencoded({ extended: true }));
 
-app.use('/v1/customers/', userRoutes);
-app.use('/v1/customers/', customerRoutes);
+//Todo: Use the express-rate-limit for login and rest-Password routes
+
+//?
+app.use("/v1/users/", userRoutes);
+app.use("/v1/customers/", customerRoutes);
 module.exports = { app };
-

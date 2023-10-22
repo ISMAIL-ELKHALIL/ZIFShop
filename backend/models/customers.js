@@ -1,11 +1,11 @@
 const { Schema, model } = require("mongoose");
-const hash = require("object-hash"); // object-hash  hashing library like bcrypt
+const bcrypt = require("bcrypt");
 
 const customerSchema = new Schema(
   {
     first_name: { type: String, required: true },
     last_name: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     valid_account: { type: Boolean, default: false },
     last_login: { type: Date },
@@ -21,11 +21,11 @@ const customerSchema = new Schema(
 customerSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     // Hash the password before saving
-    this.password = hash.MD5(this.password);
+    this.password = await bcrypt.hash(this.password, 10);
   }
   next();
 });
 
-const CustomerModel = model("Customer", customerSchema);
+const CustomerModel = model("Customer", customerSchema, "customers");
 
 module.exports = { CustomerModel };

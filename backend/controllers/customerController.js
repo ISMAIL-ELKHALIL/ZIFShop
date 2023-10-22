@@ -1,39 +1,92 @@
-"use strict";
-
-const objectHash = require("object-hash");
+//"use strict";
 const { CustomerModel } = require("../models/customers");
-var hash = require("object-hash");
-const e = require("express");
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
+const bcrypt = require("bcrypt");
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
+
+//Todo
 
 const customerController = {
+  //Todo:Implementation for customer authentication
+  //Todo: Ensure you validate the email and password, and respond with a token if successful
+
   login: async (req, res) => {
-    //Todo:Implementation for customer authentication
-    //Todo: Ensure you validate the email and password, and respond with a token if successful
+    const { email, password } = req.body;
+
+    try {
+      //? Find the customer by email
+      const existedCustomer = await CustomerModel.findOne({ email });
+
+      if (!existedCustomer) {
+        return res.status(404).send("Invalid email or password");
+      }
+      //? Verify customer password
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        existedCustomer.password
+      );
+
+      console.log("passwordStatus", isPasswordMatch);
+
+      if (!isPasswordMatch) {
+        return res.status(404).send("Invalid  password");
+      }
+
+      //? Create JWTs
+
+      const accessToken = jwt.sign(
+        {
+          _id: existedCustomer._id,
+          email: existedCustomer.email,
+        },
+        ACCESS_TOKEN_SECRET,
+        { expiresIn: "60s" }
+      );
+
+      const refreshToken = jwt.sign(
+        {
+          _id: existedCustomer.id,
+          email: existedCustomer.email,
+        },
+        REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return res.status(200).send({
+        status: 200,
+        message: "Login success",
+        ACCESS_TOKEN: accessToken,
+        REFRESH_TOKEN: refreshToken,
+      });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   createCustomer: async (req, res) => {
     try {
       const { first_name, last_name, email, password } = req.body;
-      const existingCustomer = await CustomerModel.findOne({ email: email });
+      const existedCustomer = await CustomerModel.findOne({ email: email });
 
-      if (existingCustomer) {
+      if (existedCustomer) {
         return res.status(400).json({ error: "Email already in use" });
       }
 
-      const newCustomer = new CustomerModel({
+      //? You can also use  new CustomerModel({}) with await save();
+      const newCustomer = await CustomerModel.create({
         first_name,
         last_name,
         email,
-        password: hash.MD5(password),
+        password,
         valid_account: false, //? You can send a validation email here
         active: false,
       });
 
-      await newCustomer.save();
-      res.status(201).json(newCustomer);
+      //await newCustomer.save();
+
+      return res.status(201).json(newCustomer);
     } catch (error) {
-      res
+      return res
         .status(500)
         .json({ error: "Unable to create customer", msg: error.message });
     }
@@ -57,25 +110,30 @@ const customerController = {
   },
 
   searchCustomers: async (req, res) => {
+    // Extract the query parameters from the request
+    const { first_name, last_name, email } = req.query;
+    //Todo : add error handling for empty queries
     try {
-      // Extract the query parameters from the request
-      const { query } = req.query;
+      // Convert to string because the regex in mongoDB must be a String
+      const firstName = String(first_name);
+      const lastName = String(last_name);
+      const userEmail = String(email);
 
-      // Perform the search operation based on the 'query' parameter
-      // You can use the query parameter to search for customers in  MongoDB collection
-      const customers = await CustomerModel.find({
+      console.log(req.query.first_name);
+      // Perform the search operation based on the 'query' parameters
+      const searchedCustomers = await CustomerModel.find({
         $or: [
-          { first_name: { $regex: query, $options: "i" } }, // Case-insensitive search on first_name
-          { last_name: { $regex: query, $options: "i" } }, // Case-insensitive search on last_name
-          { email: { $regex: query, $options: "i" } }, // Case-insensitive search on email
+          { first_name: { $regex: firstName, $options: "i" } }, // Case-insensitive search on first_name
+          { last_name: { $regex: lastName, $options: "i" } }, // Case-insensitive search on last_name
+          { email: { $regex: email, $options: "i" } }, // Case-insensitive search on email
         ],
       });
 
       // Send the search results as a JSON response
-      res.status(200).json(customers);
+      return res.status(200).json(searchedCustomers);
     } catch (error) {
       console.error(error);
-      res
+      return res
         .status(500)
         .json({ error: "An error occurred while searching for customers" });
     }
@@ -101,10 +159,29 @@ const customerController = {
     // Ensure role-based access control
   },
 
+  //? UPDATE CUSTOMER BY ID
   updateCustomer: async (req, res) => {
     // Implementation for updating a customer's data
     // Ensure role-based access control
     // Validate email uniqueness
+
+    const { id } = req.params;
+    const { password } = req.body;
+    if (!id) {
+      return res.status(404).send("ID is required for Updating Data");
+    }
+    try {
+      const updatedCustomer = await CustomerModel.findByIdAndUpdate(
+        id,
+        {
+          password: await bcrypt.hash(password, 10),
+        },
+        { new: true }
+      );
+      return res.status(202).send({ modifiedUser: updatedCustomer });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   //TODO Watch how to work with JWT
