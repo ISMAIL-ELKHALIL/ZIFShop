@@ -10,7 +10,7 @@ const customerController = {
   //Todo:Implementation for customer authentication
   //Todo: Ensure you validate the email and password, and respond with a token if successful
 
-  login: async (req, res) => {
+  loginCustomer: async (req, res) => {
     const { email, password } = req.body;
 
     try {
