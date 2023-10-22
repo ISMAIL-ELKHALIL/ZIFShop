@@ -13,57 +13,62 @@ const customerController = {
   login: async (req, res) => {
     const { email, password } = req.body;
 
-    //? Find the customer by email
-    const existedCustomer = await CustomerModel.findOne({ email });
+    try {
+      //? Find the customer by email
+      const existedCustomer = await CustomerModel.findOne({ email });
 
-    if (!existedCustomer) {
-      return res.status(404).send("Invalid email or password");
+      if (!existedCustomer) {
+        return res.status(404).send("Invalid email or password");
+      }
+      //? Verify customer password
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        existedCustomer.password
+      );
+
+      console.log("passwordStatus", isPasswordMatch);
+
+      if (!isPasswordMatch) {
+        return res.status(404).send("Invalid  password");
+      }
+
+      //? Create JWTs
+
+      const accessToken = jwt.sign(
+        {
+          _id: existedCustomer._id,
+          email: existedCustomer.email,
+        },
+        ACCESS_TOKEN_SECRET,
+        { expiresIn: "60s" }
+      );
+
+      const refreshToken = jwt.sign(
+        {
+          _id: existedCustomer.id,
+          email: existedCustomer.email,
+        },
+        REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return res.status(200).send({
+        status: 200,
+        message: "Login success",
+        ACCESS_TOKEN: accessToken,
+        REFRESH_TOKEN: refreshToken,
+      });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
     }
-    //? Verify customer password
-    const isPasswordMatch = await bcrypt.compare(
-      password,
-      customerExisted.password
-    );
-
-    console.log("passwordStatus", isPasswordMatch);
-
-    if (!isPasswordMatch) {
-      return res.status(404).send("Invalid  password");
-    }
-
-    //? Create JWTs
-
-    const accessToken = jwt.sign(
-      {
-        _id: existedCustomer._id,
-        email: existedCustomer.email,
-      },
-      ACCESS_TOKEN_SECRET,
-      { expiresIn: "60s" }
-    );
-
-    const refreshToken = jwt.sign(
-      {
-        _id: existedCustomer.id,
-        email: existedCustomer.email,
-      },
-      REFRESH_TOKEN_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    return res.status(202).send({
-      status: 200,
-      message: "login success",
-      user: existedCustomer,
-    });
   },
 
   createCustomer: async (req, res) => {
     try {
       const { first_name, last_name, email, password } = req.body;
-      const existingCustomer = await CustomerModel.findOne({ email: email });
+      const existedCustomer = await CustomerModel.findOne({ email: email });
 
-      if (existingCustomer) {
+      if (existedCustomer) {
         return res.status(400).json({ error: "Email already in use" });
       }
 
