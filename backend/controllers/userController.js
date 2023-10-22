@@ -1,5 +1,5 @@
 // controllers/usersController.js
-const { UserModel } = require("../models/users"); // Import your User model
+const { UserModel } = require("../models/categoriesModel"); // Import your User model
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
 const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");

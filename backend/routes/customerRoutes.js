@@ -9,7 +9,7 @@ const limiter = rateLimit({
   standardHeaders: "draft-7", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   // store: ... , // Use an external store for more precise rate limiting
-  // message: Too many requests, please try again after 15 min",
+  message: "Too many requests, please try again after 15 min",
 });
 
 //? Customer Authentication
