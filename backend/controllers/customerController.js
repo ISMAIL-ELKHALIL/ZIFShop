@@ -20,7 +20,7 @@ const customerController = {
     const isPasswordMatch = await bcrypt.compare(
       password,
       customerExisted.password
-    );
+    )
 
     console.log("passwordStatus", isPasswordMatch);
     if (!isPasswordMatch) {
@@ -189,6 +189,8 @@ const customerController = {
         .json({ error: "An error occurred while deleting the customer data" });
     }
   },
+
+
 
   getCustomerProfile: async (req, res) => {
     // Implementation for getting a customer's profile
