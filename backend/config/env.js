@@ -1,7 +1,11 @@
-require('dotenv').config('');
+require("dotenv").config("");
 
-const { PORT, MONGODB_URL } = process.env;
+const { PORT, MONGODB_URL, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } =
+  process.env;
 
-console.log(MONGODB_URL);
-
-module.exports = { PORT, MONGODB_URL }
+module.exports = {
+  PORT,
+  MONGODB_URL,
+  REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_SECRET,
+};

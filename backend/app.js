@@ -1,10 +1,14 @@
 const express = require("express");
 const { urlencoded } = require("express");
 const { router } = require("./routes/router");
+const helmet = require("helmet");
 const userRoutes = require("./routes/userRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 
 const app = express();
+
+//?Helmet helps secure Express apps by setting HTTP response headers.
+app.use(helmet());
 
 //? Middleware for parsing Body
 app.use(express.json());

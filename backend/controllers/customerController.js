@@ -1,8 +1,10 @@
 //"use strict";
-
 const { CustomerModel } = require("../models/customers");
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
 const bcrypt = require("bcrypt");
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
+
+//Todo
 
 const customerController = {
   //Todo:Implementation for customer authentication
@@ -11,26 +13,48 @@ const customerController = {
   login: async (req, res) => {
     const { email, password } = req.body;
 
-    const customerExisted = await CustomerModel.findOne({ email });
+    //? Find the customer by email
+    const existedCustomer = await CustomerModel.findOne({ email });
 
-    if (!customerExisted) {
+    if (!existedCustomer) {
       return res.status(404).send("Invalid email or password");
     }
-
+    //? Verify customer password
     const isPasswordMatch = await bcrypt.compare(
       password,
       customerExisted.password
-    )
+    );
 
     console.log("passwordStatus", isPasswordMatch);
+
     if (!isPasswordMatch) {
       return res.status(404).send("Invalid  password");
     }
 
+    //? Create JWTs
+
+    const accessToken = jwt.sign(
+      {
+        _id: existedCustomer._id,
+        email: existedCustomer.email,
+      },
+      ACCESS_TOKEN_SECRET,
+      { expiresIn: "60s" }
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        _id: existedCustomer.id,
+        email: existedCustomer.email,
+      },
+      REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+
     return res.status(202).send({
       status: 200,
       message: "login success",
-      user: customerExisted,
+      user: existedCustomer,
     });
   },
 
@@ -43,9 +67,8 @@ const customerController = {
         return res.status(400).json({ error: "Email already in use" });
       }
 
-      // const hashedPassword = await bcrypt.hash(password, 10);
-
-      const newCustomer = new CustomerModel({
+      //? You can also use  new CustomerModel({}) with await save();
+      const newCustomer = await CustomerModel.create({
         first_name,
         last_name,
         email,
@@ -54,7 +77,7 @@ const customerController = {
         active: false,
       });
 
-      await newCustomer.save();
+      //await newCustomer.save();
 
       return res.status(201).json(newCustomer);
     } catch (error) {
@@ -82,25 +105,30 @@ const customerController = {
   },
 
   searchCustomers: async (req, res) => {
+    // Extract the query parameters from the request
+    const { first_name, last_name, email } = req.query;
+    //Todo : add error handling for empty queries
     try {
-      // Extract the query parameters from the request
-      const { query } = req.query;
+      // Convert to string because the regex in mongoDB must be a String
+      const firstName = String(first_name);
+      const lastName = String(last_name);
+      const userEmail = String(email);
 
-      // Perform the search operation based on the 'query' parameter
-      // You can use the query parameter to search for customers in  MongoDB collection
-      const customers = await CustomerModel.find({
+      console.log(req.query.first_name);
+      // Perform the search operation based on the 'query' parameters
+      const searchedCustomers = await CustomerModel.find({
         $or: [
-          { first_name: { $regex: query, $options: "i" } }, // Case-insensitive search on first_name
-          { last_name: { $regex: query, $options: "i" } }, // Case-insensitive search on last_name
-          { email: { $regex: query, $options: "i" } }, // Case-insensitive search on email
+          { first_name: { $regex: firstName, $options: "i" } }, // Case-insensitive search on first_name
+          { last_name: { $regex: lastName, $options: "i" } }, // Case-insensitive search on last_name
+          { email: { $regex: email, $options: "i" } }, // Case-insensitive search on email
         ],
       });
 
       // Send the search results as a JSON response
-      res.status(200).json(customers);
+      return res.status(200).json(searchedCustomers);
     } catch (error) {
       console.error(error);
-      res
+      return res
         .status(500)
         .json({ error: "An error occurred while searching for customers" });
     }
@@ -189,8 +217,6 @@ const customerController = {
         .json({ error: "An error occurred while deleting the customer data" });
     }
   },
-
-
 
   getCustomerProfile: async (req, res) => {
     // Implementation for getting a customer's profile

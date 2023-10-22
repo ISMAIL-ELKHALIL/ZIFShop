@@ -9,6 +9,6 @@ const orderSchema = new Schema({
     status: { type: Boolean },
 });
 
-const orderModel = model("Order", orderSchema);
+const OrderModel = model("Order", orderSchema);
 
-module.exports = orderModel;
+module.exports = {OrderModel};
