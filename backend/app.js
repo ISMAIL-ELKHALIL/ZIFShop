@@ -13,6 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(urlencoded({ extended: true }))
 
+//? 
 app.use('/v1/customers/', userRoutes);
 app.use('/v1/customers/', customerRoutes);
 module.exports = { app };

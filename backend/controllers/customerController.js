@@ -2,7 +2,6 @@
 
 const objectHash = require("object-hash");
 const { CustomerModel } = require("../models/customers");
-var hash = require("object-hash");
 const e = require("express");
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
 
@@ -25,7 +24,7 @@ const customerController = {
         first_name,
         last_name,
         email,
-        password: hash.MD5(password),
+        password: password,
         valid_account: false, //? You can send a validation email here
         active: false,
       });
