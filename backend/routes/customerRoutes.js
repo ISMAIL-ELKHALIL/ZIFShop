@@ -13,7 +13,7 @@ const limiter = rateLimit({
 });
 
 //? Customer Authentication
-router.post("/login", limiter, customerController.login);
+router.post("/login", limiter, customerController.loginCustomer);
 
 //? Create a new Customer Account
 router.post("/", customerController.createCustomer);
