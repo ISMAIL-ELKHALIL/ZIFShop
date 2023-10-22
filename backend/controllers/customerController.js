@@ -3,8 +3,7 @@ const { CustomerModel } = require("../models/customersModel");
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
 const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
-
-//Todo
+const { SALT } = require("../config/env");
 
 const customerController = {
   //Todo:Implementation for customer authentication
@@ -180,7 +179,7 @@ const customerController = {
       const updatedCustomer = await CustomerModel.findByIdAndUpdate(
         id,
         {
-          password: await bcrypt.hash(password, 10),
+          password: await bcrypt.hash(password, SALT),
         },
         { new: true }
       );
