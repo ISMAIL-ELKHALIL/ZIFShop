@@ -1,14 +1,37 @@
-"use strict";
+//"use strict";
 
-const objectHash = require("object-hash");
 const { CustomerModel } = require("../models/customers");
-const e = require("express");
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
+const bcrypt = require("bcrypt");
 
 const customerController = {
+  //Todo:Implementation for customer authentication
+  //Todo: Ensure you validate the email and password, and respond with a token if successful
+
   login: async (req, res) => {
-    //Todo:Implementation for customer authentication
-    //Todo: Ensure you validate the email and password, and respond with a token if successful
+    const { email, password } = req.body;
+
+    const customerExisted = await CustomerModel.findOne({ email });
+
+    if (!customerExisted) {
+      return res.status(404).send("Invalid email or password");
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+      password,
+      customerExisted.password
+    );
+
+    console.log("passwordStatus", isPasswordMatch);
+    if (!isPasswordMatch) {
+      return res.status(404).send("Invalid  password");
+    }
+
+    return res.status(202).send({
+      status: 200,
+      message: "login success",
+      user: customerExisted,
+    });
   },
 
   createCustomer: async (req, res) => {
@@ -20,19 +43,22 @@ const customerController = {
         return res.status(400).json({ error: "Email already in use" });
       }
 
+      // const hashedPassword = await bcrypt.hash(password, 10);
+
       const newCustomer = new CustomerModel({
         first_name,
         last_name,
         email,
-        password: password,
+        password,
         valid_account: false, //? You can send a validation email here
         active: false,
       });
 
       await newCustomer.save();
-      res.status(201).json(newCustomer);
+
+      return res.status(201).json(newCustomer);
     } catch (error) {
-      res
+      return res
         .status(500)
         .json({ error: "Unable to create customer", msg: error.message });
     }
@@ -100,10 +126,29 @@ const customerController = {
     // Ensure role-based access control
   },
 
+  //? UPDATE CUSTOMER BY ID
   updateCustomer: async (req, res) => {
     // Implementation for updating a customer's data
     // Ensure role-based access control
     // Validate email uniqueness
+
+    const { id } = req.params;
+    const { password } = req.body;
+    if (!id) {
+      return res.status(404).send("ID is required for Updating Data");
+    }
+    try {
+      const updatedCustomer = await CustomerModel.findByIdAndUpdate(
+        id,
+        {
+          password: await bcrypt.hash(password, 10),
+        },
+        { new: true }
+      );
+      return res.status(202).send({ modifiedUser: updatedCustomer });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   //TODO Watch how to work with JWT

@@ -33,4 +33,3 @@ router.get("/profile", customerController.getCustomerProfile);
 router.patch("/update/:id", customerController.updateCustomerProfile);
 
 module.exports = router;
-
