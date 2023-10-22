@@ -1,5 +1,7 @@
 const { Schema, model } = require("mongoose");
-const {SALT} = require ("../config/env");
+const { SALT } = require("../config/env");
+const bcrypt = require("bcrypt");
+
 const userSchema = new Schema(
   {
     first_name: { type: String, required: true },

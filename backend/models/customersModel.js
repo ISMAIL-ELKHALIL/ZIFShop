@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const bcrypt = require("bcrypt");
+const { SALT } = require("../config/env");
 
 const customerSchema = new Schema(
   {
@@ -21,7 +22,8 @@ const customerSchema = new Schema(
 customerSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     // Hash the password before saving
-    this.password = await bcrypt.hash(this.password, 10);
+    //const salt = await bcrypt.genSaltSync(parseInt(SALT));
+    this.password = await bcrypt.hash(this.password, SALT);
   }
   next();
 });

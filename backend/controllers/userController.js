@@ -1,10 +1,9 @@
 // controllers/usersController.js
-const { UserModel } = require("../models/categoriesModel"); // Import your User model
+const { UserModel } = require("../models/usersModel"); // Import your User model
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
-const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
 const { SALT } = require("../config/env");
-
+const bcrypt = require("bcrypt");
 // Controller for handling user-related API endpoints
 const usersController = {
   // Middleware for user authentication (You'll need to implement this)
