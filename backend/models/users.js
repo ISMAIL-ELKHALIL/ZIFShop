@@ -1,6 +1,7 @@
 const { Schema, model } = require("mongoose");
-
-const userSchema = new Schema({
+const {SALT} = require ("../config/env");
+const userSchema = new Schema(
+  {
     first_name: { type: String, required: true },
     last_name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -8,12 +9,23 @@ const userSchema = new Schema({
     user_name: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     active: { type: Boolean, default: false },
-    last_login: { type: Date }
-}, {
-    timestamps: true
-})
+    last_login: { type: Date },
+  },
+  {
+    timestamps: true,
+  }
+);
 
+//? Add a pre-save hook to hash the password every time a user modifies their password in a user management system.
 
-const UserModel = model('User', userSchema);
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    // Hash the password before saving
+    this.password = await bcrypt.hash(this.password, SALT);
+  }
+  next();
+});
 
-module.exports = { UserModel }
+const UserModel = model("User", userSchema);
+
+module.exports = { UserModel };

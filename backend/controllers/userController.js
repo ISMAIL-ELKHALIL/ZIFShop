@@ -1,27 +1,95 @@
 // controllers/usersController.js
-const { UserModel } = require("../models/User"); // Import your User model
+const { UserModel } = require("../models/users"); // Import your User model
+const jwt = require("jsonwebtoken"); // For decoding JWT tokens
+const bcrypt = require("bcrypt");
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
+const { SALT } = require("../config/env");
 
 // Controller for handling user-related API endpoints
 const usersController = {
   // Middleware for user authentication (You'll need to implement this)
-  authenticateUser: (req, res, next) => {
-    // Implement your authentication logic here, e.g., using JWT or passport.js.
-    // Check if the user is authenticated, and attach user information to the request object.
-    // If not authenticated, return a 401 Unauthorized response.
-    // Then, call next() to proceed to the route handler.
-    // Example:
-    // if (userIsAuthenticated) {
-    //   req.user = authenticatedUser;
-    //   next();
-    // } else {
-    //   return res.status(401).json({ message: 'Authentication failed' });
-    // }
+  loginUser: async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+      //? Find the User by email
+      const existedUser = await UserModel.findOne({ email });
+
+      if (!existedUser) {
+        return res.status(404).send("Invalid email or password");
+      }
+      //? Verify User password
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        existedUser.password
+      );
+
+      console.log("passwordStatus", isPasswordMatch);
+
+      if (!isPasswordMatch) {
+        return res.status(404).send("Invalid  password");
+      }
+
+      //? Create JWTs
+
+      const accessToken = jwt.sign(
+        {
+          _id: existedUser._id,
+          email: existedUser.email,
+        },
+        ACCESS_TOKEN_SECRET,
+        { expiresIn: "60s" }
+      );
+
+      const refreshToken = jwt.sign(
+        {
+          _id: existedUser._id,
+          email: existedUser.email,
+        },
+        REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return res.status(200).send({
+        status: 200,
+        message: "Login success",
+        ACCESS_TOKEN: accessToken,
+        REFRESH_TOKEN: refreshToken,
+      });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   // Route handler for adding a new user
-  addUser: (req, res) => {
-    // Implement logic to add a new user based on the request body.
-    // Parse the request body, validate data, and save to the database.
+  createUser: async (req, res) => {
+    try {
+      const { first_name, last_name, user_name, email, password, role } =
+        req.body;
+      const existedUser = await UserModel.findOne({ email: email });
+
+      if (existedUser) {
+        return res.status(400).json({ error: "Email already in use" });
+      }
+
+      //? You can also use  new UserModel({}) with await save();
+      const newUser = await UserModel.create({
+        first_name,
+        last_name,
+        email,
+        role,
+        password,
+        user_name,
+      });
+
+      //await newUser.save();
+
+      return res.status(201).json(newUser);
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: "Unable to create customer", msg: error.message });
+    }
   },
 
   // Route handler for getting all users
@@ -53,5 +121,4 @@ const usersController = {
     // Implement logic to delete a user by ID from the database.
   },
 };
-
-//module.exports = { usersController };
+module.exports = { usersController };
