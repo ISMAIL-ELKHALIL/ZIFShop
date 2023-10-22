@@ -1,10 +1,10 @@
 // controllers/usersController.js
-const { UserModel } = require("../models/User"); // Import your User model
+const { UserModel } = require("../models/categoriesModel"); // Import your User model
 
 // Controller for handling user-related API endpoints
 const usersController = {
   // Middleware for user authentication (You'll need to implement this)
-  authenticateUser: (req, res, next) => {
+  loginUser: (req, res, next) => {
     // Implement your authentication logic here, e.g., using JWT or passport.js.
     // Check if the user is authenticated, and attach user information to the request object.
     // If not authenticated, return a 401 Unauthorized response.
