@@ -37,15 +37,18 @@ const usersController = {
         {
           _id: existedUser._id,
           email: existedUser.email,
+          role: existedUser.role,
+          
         },
         ACCESS_TOKEN_SECRET,
-        { expiresIn: "60s" }
+        { expiresIn: "1d" }
       );
 
       const refreshToken = jwt.sign(
         {
           _id: existedUser._id,
           email: existedUser.email,
+          role: existedUser.role,
         },
         REFRESH_TOKEN_SECRET,
         { expiresIn: "7d" }
@@ -91,37 +94,136 @@ const usersController = {
       console.log(error);
       return res
         .status(500)
-        .json({ error: "Unable to create customer", msg: error.message });
+        .json({ error: "Unable to create user", msg: error.message });
     }
   },
 
   // Route handler for getting all users
-  getAllUsers: (req, res) => {
-    // Implement logic to retrieve all users from the database and send the list as a response.
+  getAllUsers: async (req, res) => {
+    // Implementation for getting all Users with pagination and sorting
+    // Ensure role-based access control
+    try {
+      const allUsers = await UserModel.find();
+      if (allUsers.length === 0) {
+        return res.status(404).send("no user found");
+      }
+
+      return res.status(201).send({ Count: allUsers.length, Users: allUsers });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   // Route handler for getting a user by ID
-  getUserById: (req, res) => {
-    const userId = req.params.id;
-    // Implement logic to find a user by ID and send it as a response.
+  getUserById: async (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(404).send("The ID is required for Search");
+    }
+
+    try {
+      const searchedUser = await UserModel.findById(id);
+
+      return res.status(201).send(searchedUser);
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   // Route handler for searching for a user
-  searchUser: (req, res) => {
+  searchUser: async (req, res) => {
     const query = req.query.query;
-    // Implement logic to search for users based on the provided query.
+    // Extract the query parameters from the request
+    const { first_name, last_name, email } = req.query;
+    //Todo : add error handling for empty queries
+    try {
+      // Convert to string because the regex in mongoDB must be a String
+      const firstName = String(first_name);
+      const lastName = String(last_name);
+      const email = String(email);
+
+      console.log(req.query.first_name);
+      // Perform the search operation based on the 'query' parameters
+      const searchedUser = await UserModel.find({
+        $or: [
+          { first_name: { $regex: firstName, $options: "i" } }, // Case-insensitive search on first_name
+          { last_name: { $regex: lastName, $options: "i" } }, // Case-insensitive search on last_name
+          { email: { $regex: email, $options: "i" } }, // Case-insensitive search on email
+        ],
+      });
+
+      // Send the search results as a JSON response
+      return res.status(200).json(searchedUser);
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "An error occurred while searching for users" });
+    }
   },
 
   // Route handler for updating a user's data
-  updateUser: (req, res) => {
-    const userId = req.params.id;
-    // Implement logic to update a user's data based on the request body.
+  updateUser: async (req, res) => {
+    // Implementation for updating a user's data
+    // Ensure role-based access control
+    // Validate email uniqueness
+
+    const { id } = req.params;
+    const { password } = req.body;
+    if (!id) {
+      return res.status(404).send("ID is required for Updating Data");
+    }
+    try {
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        id,
+        {
+          password: await bcrypt.hash(password, SALT),
+        },
+        { new: true }
+      );
+      return res.status(202).send({ modifiedUser: updatedUser });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   // Route handler for deleting a user
-  deleteUser: (req, res) => {
-    const userId = req.params.id;
-    // Implement logic to delete a user by ID from the database.
+  //? DELETE user
+  deleteUser: async (req, res) => {
+    try {
+      // Extract the token from the request headers
+      const token = req.headers.authorization;
+
+      // Verify and decode the token to obtain the user's ID
+      const secretKey = ACCESS_TOKEN_SECRET; // Replace with your actual secret key
+      const decoded = jwt.verify(token, secretKey);
+      const userId = decoded.userId;
+
+      // Check if the user is allowed to delete their own data
+      if (userId !== req.params.id) {
+        return res
+          .status(403)
+          .json({ error: "You are not authorized to perform this action." });
+      }
+
+      // You have the user's ID; now you can proceed to delete or anonymize the data.
+      // Example: To anonymize, you can set certain fields to default values (e.g., null or empty strings).
+
+      const user = await UserModel.findByIdAndDelete(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Optionally, you can respond with a success message
+      return res
+        .status(200)
+        .json({ message: "User data has been deleted or anonymized." });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "An error occurred while deleting the user data" });
+    }
   },
 };
 module.exports = { usersController };
