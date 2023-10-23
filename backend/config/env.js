@@ -1,7 +1,15 @@
-require('dotenv').config('');
+require("dotenv").config("");
+const bcrypt = require("bcrypt");
+const { PORT, MONGODB_URL, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } =
+  process.env;
 
-const { PORT, MONGODB_URL } = process.env;
+let { SALT } = process.env;
+SALT = bcrypt.genSaltSync(parseInt(SALT));
 
-console.log(MONGODB_URL);
-
-module.exports = { PORT, MONGODB_URL }
+module.exports = {
+  PORT,
+  MONGODB_URL,
+  REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_SECRET,
+  SALT,
+};
