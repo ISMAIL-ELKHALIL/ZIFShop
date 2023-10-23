@@ -1,11 +1,12 @@
 // controllers/usersController.js
-const { UserModel } = require("../models/categoriesModel"); // Import your User model
+const { UserModel } = require("../models/usersModel"); // Import your User model
 const jwt = require("jsonwebtoken"); // For decoding JWT tokens
-const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
 const { SALT } = require("../config/env");
+const bcrypt = require("bcrypt");
 
-// Controller for handling user-related API endpoints
+
+// User Controller for handling user-related API endpoints
 const usersController = {
   // Middleware for user authentication (You'll need to implement this)
   loginUser: async (req, res) => {
@@ -57,6 +58,7 @@ const usersController = {
         REFRESH_TOKEN: refreshToken,
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).send({ error: error.message });
     }
   },
@@ -86,6 +88,7 @@ const usersController = {
 
       return res.status(201).json(newUser);
     } catch (error) {
+      console.log(error);
       return res
         .status(500)
         .json({ error: "Unable to create customer", msg: error.message });
