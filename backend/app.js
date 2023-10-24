@@ -5,8 +5,9 @@ const helmet = require("helmet");
 const userRoutes = require("./routes/userRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const subCategoryRoutes = require("./routes/subCategoryRoutes");
 const productRoutes = require("./routes/productRoutes");
-const orderRoutes = require("./routes//orderRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(urlencoded({ extended: true }));
 app.use("/v1/users/", userRoutes);
 app.use("/v1/customers/", customerRoutes);
 app.use("/v1/categories/", categoryRoutes);
+app.use("/v1/subcategories/", subCategoryRoutes);
 app.use("/v1/products", productRoutes);
 app.use("/v1/orders", orderRoutes);
 
