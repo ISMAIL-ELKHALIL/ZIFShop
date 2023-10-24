@@ -79,7 +79,6 @@ const customerController = {
       const isCustomerExisted = await CustomerModel.findOne({ email: email });
 
       if (isCustomerExisted) {
-        await CustomerModel.deleteMany({});
         return res.status(400).json({ error: "Email already in use" });
       }
 
@@ -212,9 +211,7 @@ const customerController = {
         return res.status(404).send("Customer with provided ID does not exist");
       }
 
-      return res
-        .status(200)
-        .send("Account confirmed successfully");
+      return res.status(200).send("Account confirmed successfully");
     } catch (error) {
       console.log(error);
       return res.status(500).send({ error: error.message });
