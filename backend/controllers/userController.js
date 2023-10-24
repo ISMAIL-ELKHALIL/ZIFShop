@@ -5,7 +5,6 @@ const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
 const { SALT } = require("../config/env");
 const bcrypt = require("bcrypt");
 
-
 // User Controller for handling user-related API endpoints
 const usersController = {
   // Middleware for user authentication (You'll need to implement this)
@@ -20,6 +19,7 @@ const usersController = {
         return res.status(404).send("Invalid email or password");
       }
       //? Verify User password
+
       const isPasswordMatch = await bcrypt.compare(
         password,
         existedUser.password
@@ -38,7 +38,6 @@ const usersController = {
           _id: existedUser._id,
           email: existedUser.email,
           role: existedUser.role,
-          
         },
         ACCESS_TOKEN_SECRET,
         { expiresIn: "1d" }
@@ -192,12 +191,9 @@ const usersController = {
   deleteUser: async (req, res) => {
     try {
       // Extract the token from the request headers
-      const token = req.headers.authorization;
-
-      // Verify and decode the token to obtain the user's ID
-      const secretKey = ACCESS_TOKEN_SECRET; // Replace with your actual secret key
-      const decoded = jwt.verify(token, secretKey);
-      const userId = decoded.userId;
+      const token = req.headers.authorization || req.headers.Authorization;
+      const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+      const userId = decoded._id;
 
       // Check if the user is allowed to delete their own data
       if (userId !== req.params.id) {

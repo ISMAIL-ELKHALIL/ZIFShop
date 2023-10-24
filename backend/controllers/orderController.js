@@ -5,7 +5,6 @@ const orderController = {
 
   createOrder: async (req, res) => {
     try {
-        
       const { customer_id, order_items, price, cart_total_price, status } =
         req.body;
       const newOrder = await OrderModel.create({
@@ -22,17 +21,11 @@ const orderController = {
       return res.status(500).send({ error: error.message });
     }
   },
+
   //? GET ALL ORDERS
 
   getAllOrders: async (req, res) => {
     try {
-      // Ensure only users with admin and manager roles can list orders
-      const userRole = req.user.role; // Assuming you have user information in req.user
-
-      if (userRole !== "admin" && userRole !== "manager") {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
       // Retrieve a list of orders, limiting to 10 orders per page
       const page = req.query.page || 1;
       const limit = 10;
@@ -41,10 +34,10 @@ const orderController = {
       const orders = await OrderModel.find().skip(skip).limit(limit).exec();
 
       // You need to fetch customer information as well, as per the rules
-
-      res.status(200).json(orders);
+      res.status(200).json({ Count: orders.length, Data: orders });
     } catch (error) {
-      res.status(500).json({ error: "Error listing orders" });
+      console.log(error);
+      res.status(500).json({ error: error.message });
     }
   },
 
@@ -52,27 +45,22 @@ const orderController = {
 
   getOrderById: async (req, res) => {
     try {
-      // Ensure only users with admin and manager roles can get order details
-      const userRole = req.user.role; // Assuming you have user information in req.user
-
-      if (userRole !== "admin" && userRole !== "manager") {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      const orderId = req.params.id;
-      const order = await OrderModel.findById(orderId);
+      const { id } = req.params;
+      const order = await OrderModel.findById(id);
 
       if (!order) {
-        return res
-          .status(404)
-          .json({ error: "No order found with the provided ID" });
+        return res.status(404).json({
+          status: 404,
+          message: "invalid order id",
+        });
       }
 
       // You also need to retrieve the customer's first name and last name
 
       res.status(200).json(order);
     } catch (error) {
-      res.status(500).json({ error: "Error getting the order" });
+      console.log(error);
+      res.status(500).json({ error: error.message });
     }
   },
 
@@ -80,31 +68,30 @@ const orderController = {
 
   updateOrderStatus: async (req, res) => {
     try {
-      // Ensure only users with admin and manager roles can update order data
-      const userRole = req.user.role; // Assuming you have user information in req.user
-
-      if (userRole !== "admin" && userRole !== "manager") {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      const orderId = req.params.id;
+      const { id } = req.params;
       const { status } = req.body;
 
-      const order = await OrderModel.findById(orderId);
+      const order = await OrderModel.findById(id);
 
       if (!order) {
-        return res
-          .status(404)
-          .json({ error: "No order found with the provided ID" });
+        return res.status(404).json({
+          status: 404,
+          message: "invalid order id",
+        });
       }
 
       // Update the order status
-      order.status = status;
+      order.status = String(status).toLowerCase();
       const updatedOrder = await order.save();
 
-      res.status(200).json(updatedOrder);
+      res.status(200).json({
+        status: 200,
+        message: "order status updated successfully",
+        updatedOrder: updatedOrder,
+      });
     } catch (error) {
-      res.status(500).json({ error: "Error updating the order status" });
+      console.log(error);
+      res.status(500).json({ error: error.message });
     }
   },
 };

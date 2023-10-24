@@ -1,13 +1,16 @@
 const { Router } = require("express");
 const { usersController } = require("../controllers/userController");
-const { verifyJWT, checkRole } = require("../middlewares/verifyUserAuth");
+const {
+  verifyJWT,
+  checkRole,
+} = require("../middlewares/verifyUserAuthAndRole");
 const router = Router();
 
 // Login endpoint
 router.post("/login", usersController.loginUser);
 
 // Create a new user endpoint
-router.post("/",verifyJWT,checkRole, usersController.createUser);
+router.post("/", verifyJWT, checkRole, usersController.createUser);
 
 // Get all users endpoint
 router.get("/", usersController.getAllUsers);
