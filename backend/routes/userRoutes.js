@@ -26,4 +26,5 @@ router.put("/:id", usersController.updateUser);
 // Delete a user endpoint
 router.delete("/:id", usersController.deleteUser);
 
+
 module.exports = router;

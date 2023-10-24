@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken"); // For decoding JWT tokens
 const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
 const { SALT } = require("../config/env");
-
+const sendVerificationEmail = require("../utils/sendVerificationEmail");
 const customerController = {
   //Todo:Implementation for customer authentication
   //Todo: Ensure you validate the email and password, and respond with a token if successful
@@ -96,6 +96,18 @@ const customerController = {
 
       console.log("by ___ID", newCustomer._id);
       console.log("by ID", newCustomer.id);
+
+      //?Send Verification email
+
+      await sendVerificationEmail(
+        newCustomer.email,
+        "Account Verification",
+        `Hi ${newCustomer.first_name.toUpperCase()},
+          Welcome to IShop please confirm  your email by clicking on the email blow
+          <http://localhost:3000/v1/customers/validate/${newCustomer.id}>
+          `
+      );
+
       return res.status(201).json(newCustomer);
     } catch (error) {
       console.log(error);
@@ -167,25 +179,43 @@ const customerController = {
   //? GET CUSTOMER BY ID
 
   getCustomerById: async (req, res) => {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(404).send("The ID is required for Search");
-    }
-
     try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(404).send("The ID is required for Search");
+      }
       const searchedCustomer = await CustomerModel.findById(id);
 
       return res.status(201).send(searchedCustomer);
     } catch (error) {
       console.log(error);
-      return res.status(500).send({ error: e.message });
+      return res.status(500).send({ error: error.message });
     }
   },
   //? Validate Customer Email
 
   validateCustomer: async (req, res) => {
-    // Implementation for validating a customer's account
-    // Todo: Use nodeMail to send a
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(404).send("ID is required for Email Confirmation");
+      }
+
+      const existedCustomer = await CustomerModel.findByIdAndUpdate(id, {
+        valid_account: true,
+        active: true,
+      });
+
+      if (!existedCustomer) {
+        return res.status(404).send("Customer with provided ID does not exist");
+      }
+
+      return res.status(200).send("Account confirmed successfully");
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({ error: error.message });
+    }
   },
 
   //? UPDATE CUSTOMER BY ID
@@ -219,19 +249,19 @@ const customerController = {
 
   deleteCustomer: async (req, res) => {
     /*     // Extract the token from the request headers
-      const token = req.headers.authorization;
+        const token = req.headers.authorization;
 
-      // Verify and decode the token to obtain the customer's ID
-      const secretKey = "your-secret-key"; // Replace with your actual secret key
-      const decoded = jwt.verify(token, secretKey);
-      const customerId = decoded.customerId;
+        // Verify and decode the token to obtain the customer's ID
+        const secretKey = "your-secret-key"; // Replace with your actual secret key
+        const decoded = jwt.verify(token, secretKey);
+        const customerId = decoded.customerId;
 
-      // Check if the customer is allowed to delete their own data
-      if (customerId !== req.params.id) {
-        return res
-          .status(403)
-          .json({ error: "You are not authorized to perform this action." });
-      } */
+        // Check if the customer is allowed to delete their own data
+        if (customerId !== req.params.id) {
+          return res
+            .status(403)
+            .json({ error: "You are not authorized to perform this action." });
+        } */
 
     // You have the customer's ID; now you can proceed to delete or anonymize the data.
     // Example: To anonymize, you can set certain fields to default values (e.g., null or empty strings).
