@@ -1,4 +1,5 @@
 const { Router } = require("express");
+
 const router = Router();
 const { verifyJWT, checkRole } = require("../middlewares/verifyUserAuthAndRole");
 const { categoriesController } = require("../controllers/categoryController");
