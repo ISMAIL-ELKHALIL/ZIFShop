@@ -1,9 +1,8 @@
 const { Router } = require("express");
 const { usersController } = require("../controllers/userController");
-const {
-  verifyJWT,
-  checkRole,
-} = require("../middlewares/verifyUserAuthAndRole");
+
+const { verifyJWT, checkRole } = require("../middlewares/verifyUserAuthAndRole");
+
 const router = Router();
 
 // Login endpoint
