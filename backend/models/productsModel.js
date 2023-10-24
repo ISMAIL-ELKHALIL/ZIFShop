@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const productSchema = new Schema({
-  sku: { type: String, required: true },
+  sku: { type: String, required: true, unique: true },
   product_image: { type: String, required: true },
   product_name: { type: String, required: true },
   subcategory_id: { type: String },
@@ -13,6 +13,6 @@ const productSchema = new Schema({
   active: { type: Boolean, required: true },
 });
 
-const ProductModel = model("Product", ProductSchema);
+const ProductModel = model("Product", productSchema);
 
 module.exports = { ProductModel };
