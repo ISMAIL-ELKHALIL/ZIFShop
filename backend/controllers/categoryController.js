@@ -6,7 +6,7 @@ const { CategoriesModel } = require("../models/categoriesModel"); // Import your
 const categoriesController = {
   createCategory: async (req, res) => {
     try {
-    //TODO check if the categrory already exists
+      //TODO check if the category already exists
       const { category_name } = req.body;
       const newCategory = await CategoriesModel.create({
         category_name,
