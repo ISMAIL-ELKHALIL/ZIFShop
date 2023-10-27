@@ -1,13 +1,13 @@
 // controllers/categoryController.js
 const slugify = require("slugify");
 const { CategoriesModel } = require("../models/categoriesModel"); // Import your Categories model
+const { SubCategoryModel } = require("../models/subcategoriesModel")
 
 // Controller for handling categories-related API endpoints
 const categoriesController = {
   createCategory: async (req, res) => {
     try {
-
-      //TODO check if the categrory already exists
+      //TODO check if the category already exists
       const { category_name } = req.body;
       const newCategory = await CategoriesModel.create({
         category_name,
@@ -72,7 +72,7 @@ const categoriesController = {
   },
 
   deleteCategory: async (req, res) => {
-    try {
+    /*     try {
       const { id } = req.params;
 
       const category = await CategoriesModel.findByIdAndDelete(id);
@@ -83,7 +83,30 @@ const categoriesController = {
       }
     } catch (error) {
       return res.status(500).json({ error: error.message });
+    } */
+
+    try {
+      const { id } = req.params;
+    
+      const category = await CategoriesModel.findById(id);
+      if (!category) {
+        return res.status(404).json({ msg: `No category for this id ${id}` });
+      }
+    
+      const subcategories = await SubCategoryModel.find({ category_id: id });
+      if (subcategories.length > 0) {
+        return res.status(400).json({ msg:
+            "Unable to delete this category, subcategories are attached to it."
+        });
+      }
+    
+      await category.deleteOne();
+    
+      res.status(200).json({msg: "Category successfully deleted" });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
   },
 };
 module.exports = { categoriesController };
+
