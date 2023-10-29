@@ -1,14 +1,12 @@
-const { Router } = require("express");
+const router = require("express").Router();
 
-const router = Router();
-const { verifyJWT, checkRole } = require("../middlewares/verifyUserAuthAndRole");
 const { categoriesController } = require("../controllers/categoryController");
-
+const { validateInputs } = require("../middlewares/validateInputs");
 router.post("/", categoriesController.createCategory);
 
-router.get("/", categoriesController.getCategories);
+router.get("/", categoriesController.getAllCategories);
 
-router.get("/:id", categoriesController.getCategory);
+router.get("/:id([0-9a-fA-F]{24})", categoriesController.getCategory);
 
 router.get("/search", categoriesController.searchCategory);
 

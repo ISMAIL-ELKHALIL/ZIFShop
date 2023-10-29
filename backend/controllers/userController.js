@@ -131,7 +131,6 @@ const usersController = {
 
   // Route handler for searching for a user
   searchUser: async (req, res) => {
-    const query = req.query.query;
     // Extract the query parameters from the request
     const { first_name, last_name, email } = req.query;
     //Todo : add error handling for empty queries
@@ -139,7 +138,7 @@ const usersController = {
       // Convert to string because the regex in mongoDB must be a String
       const firstName = String(first_name);
       const lastName = String(last_name);
-      const email = String(email);
+      const userEmail = String(email);
 
       console.log(req.query.first_name);
       // Perform the search operation based on the 'query' parameters
@@ -147,7 +146,7 @@ const usersController = {
         $or: [
           { first_name: { $regex: firstName, $options: "i" } }, // Case-insensitive search on first_name
           { last_name: { $regex: lastName, $options: "i" } }, // Case-insensitive search on last_name
-          { email: { $regex: email, $options: "i" } }, // Case-insensitive search on email
+          { email: { $regex: userEmail, $options: "i" } }, // Case-insensitive search on email
         ],
       });
 

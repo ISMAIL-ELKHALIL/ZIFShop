@@ -1,7 +1,11 @@
-const { Router } = require("express");
-const router = Router();
+const router = require("express").Router();
+const { validateInputs } = require("../middlewares/validateInputs");
 const customerController = require("../controllers/customerController");
 const { rateLimit } = require("express-rate-limit");
+const {
+  handleInputErrors,
+  validateInput,
+} = require("../middlewares/customizedInputValidator");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -16,7 +20,12 @@ const limiter = rateLimit({
 router.post("/login", limiter, customerController.loginCustomer);
 
 //? Create a new Customer Account
-router.post("/", customerController.createCustomer);
+router.post(
+  "/",
+  handleInputErrors("customer"),
+  validateInput,
+  customerController.createCustomer
+);
 
 //? Get all Customers
 router.get("/", customerController.getAllCustomers);
@@ -25,7 +34,7 @@ router.get("/", customerController.getAllCustomers);
 router.get("/search", customerController.searchCustomers);
 
 //? Get a Customer by ID
-router.get("/:id", customerController.getCustomerById);
+router.get("/:id([0-9a-fA-F]{24})", customerController.getCustomerById);
 
 //? Validate Customer's Account
 router.put("/validate/:id", customerController.validateCustomer);
@@ -34,7 +43,7 @@ router.put("/validate/:id", customerController.validateCustomer);
 router.put("/:id", customerController.updateCustomer);
 
 //? Delete Customer's Account
-router.delete("/delete/:id", customerController.deleteCustomer);
+router.delete("/:id", customerController.deleteCustomer);
 
 //? Get Customer's Profile
 router.get("/profile", customerController.getCustomerProfile);

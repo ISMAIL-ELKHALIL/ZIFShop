@@ -13,6 +13,11 @@ SALT = bcrypt.genSaltSync(Number(SALT));
 const { BASE_URL, HOST, EMAIL_PORT, SECURE, USER_EMAIL, PASSWORD, SERVICE } =
   process.env;
 
+//? Variable for Cloudinary library
+
+const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_SECRET_KEY } =
+  process.env;
+
 module.exports = {
   PORT,
   MONGODB_URL,
@@ -26,4 +31,7 @@ module.exports = {
   SECURE,
   USER_EMAIL,
   PASSWORD,
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_SECRET_KEY,
 };

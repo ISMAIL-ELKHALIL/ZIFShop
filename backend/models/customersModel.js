@@ -10,7 +10,7 @@ const customerSchema = new Schema(
     password: { type: String, required: true },
     valid_account: { type: Boolean, default: false },
     last_login: { type: Date },
-    active: { type: Boolean, default: false },
+    active: { type: Boolean, default: true },
   },
   {
     timestamps: true,

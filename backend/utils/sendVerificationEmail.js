@@ -8,7 +8,7 @@ const {
   USER_EMAIL,
 } = require("../config/env");
 
-const sendVerificationEmail = async (email, subject, text) => {
+const sendVerificationEmail = async (email, subject, text, html) => {
   try {
     const transporter = nodeMailer.createTransport({
       host: HOST,
@@ -29,6 +29,7 @@ const sendVerificationEmail = async (email, subject, text) => {
       to: email,
       subject: subject,
       text: text,
+      html: html,
     });
 
     console.log("Email sent Success");

@@ -6,8 +6,7 @@ const { CategoriesModel } = require("../models/categoriesModel"); // Import your
 const categoriesController = {
   createCategory: async (req, res) => {
     try {
-
-      //TODO check if the categrory already exists
+      //Todo check if the category already exists
       const { category_name } = req.body;
       const newCategory = await CategoriesModel.create({
         category_name,
@@ -19,7 +18,7 @@ const categoriesController = {
     }
   },
 
-  getCategories: async (req, res) => {
+  getAllCategories: async (req, res) => {
     try {
       const page = req.query.page * 1 || 1;
       const limit = req.query.limit * 1 || 3;

@@ -8,7 +8,7 @@ const categorySchema = new Schema(
       unique: true,
     },
     active: { type: Boolean, required: true, default: false },
-    // A and B => shoping.com/a-and-b
+    // A and B => shopping.com/a-and-b
     slug: {
       type: String,
       lowercase: true,

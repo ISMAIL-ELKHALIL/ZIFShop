@@ -1,17 +1,13 @@
-const express = require("express");
-const router = express.Router();
 const { ProductModel } = require("../models/productsModel");
-const e = require("express");
-
 const productController = {
   //? CREATE A NEW PRODUCT
 
-  createProduct: async (req, res) => {
+  createProduct: async (req, res, next) => {
     try {
       const {
         sku,
-        product_image,
         product_name,
+        product_image,
         subcategory_id,
         short_description,
         long_description,
@@ -20,6 +16,9 @@ const productController = {
         active,
       } = req.body;
 
+      //? Upload the Product images to Cloudinary
+
+      // const productImagePath = req.file ? req.file.path : null;
       const isProductExisted = await ProductModel.findOne({ sku: sku });
 
       if (isProductExisted) {
@@ -27,8 +26,8 @@ const productController = {
       }
       const newProduct = await ProductModel.create({
         sku,
-        product_image,
         product_name,
+        product_image, //: productImagePath,
         subcategory_id,
         short_description,
         long_description,
@@ -43,7 +42,10 @@ const productController = {
       res.status(200).send(newProduct);
     } catch (error) {
       console.log(error);
-      res.status(500).send({ error: error.message });
+      res.status(500).send({
+        where: "productController.createProduct",
+        error: error.message,
+      });
     }
   },
 
@@ -93,19 +95,26 @@ const productController = {
         ],
       };
 
+      //? To search with minPrice and maxPrice
       if (minPrice !== undefined && maxPrice !== undefined) {
-        searchQuery.price = {
-          $gte: parseFloat(minPrice),
-          $lte: parseFloat(maxPrice),
-        };
+        searchQuery["$or"].push({
+          price: {
+            $gte: parseInt(minPrice),
+            $lte: parseInt(maxPrice),
+          },
+        });
       } else if (minPrice !== undefined) {
-        searchQuery.price = {
-          $gte: parseFloat(minPrice),
-        };
+        searchQuery["$or"].push({
+          price: {
+            $gte: parseInt(minPrice),
+          },
+        });
       } else if (maxPrice !== undefined) {
-        searchQuery.price = {
-          $lte: parseFloat(maxPrice),
-        };
+        searchQuery["$or"].push({
+          price: {
+            $lte: parseInt(maxPrice),
+          },
+        });
       }
 
       const searchedProducts = await ProductModel.find(searchQuery);
@@ -114,7 +123,7 @@ const productController = {
       return res.status(200).json(searchedProducts);
     } catch (error) {
       console.log(error);
-      res.status(500).send({ error: error.message });
+      return res.status(500).send({ error: error.message });
     }
   },
 

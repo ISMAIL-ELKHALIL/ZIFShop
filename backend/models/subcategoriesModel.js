@@ -5,6 +5,7 @@ const subCategorySchema = new Schema(
     subcategory_name: {
       type: String,
       unique: true,
+      require: true,
     },
     slug: {
       type: String,
@@ -15,6 +16,7 @@ const subCategorySchema = new Schema(
       ref: "Category",
       required: true,
     },
+    active: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

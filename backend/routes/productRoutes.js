@@ -1,18 +1,28 @@
-const { Router } = require("express");
-const router = Router();
-const productController = require("../controllers/productController"); // Make sure the import path matches your project structure
-
+const router = require("express").Router();
+const productController = require("../controllers/productController");
+const { validateInputs } = require("../middlewares/validateInputs");
+const { upload } = require("../middlewares/uploadImage");
+const {
+  handleInputErrors,
+  validateInput,
+} = require("../middlewares/customizedInputValidator");
 // Create a new product
-router.post("/", productController.createProduct);
+router.post(
+  "/",
+  handleInputErrors("product"),
+  validateInput,
+  upload.single("product_image"),
+  productController.createProduct
+);
 
 // List all products
 router.get("/", productController.getAllProducts);
 
+// Get a product by ID
+router.get("/:id([0-9a-fA-F]{24})", productController.getProductById);
+
 // Search for a product
 router.get("/search", productController.searchProducts);
-
-// Get a product by ID
-router.get("/:id", productController.getProductById);
 
 // Update a product
 router.patch("/:id", productController.updateProduct);

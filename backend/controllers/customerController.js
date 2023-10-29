@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../config/env");
 const { SALT } = require("../config/env");
 const sendVerificationEmail = require("../utils/sendVerificationEmail");
+
 const customerController = {
   //Todo:Implementation for customer authentication
   //Todo: Ensure you validate the email and password, and respond with a token if successful
@@ -36,7 +37,12 @@ const customerController = {
       //?Check if the customer has activated his account
 
       if (existedCustomer.valid_account === false) {
-        return res.status(404).send("Please confirm your email");
+        return res.status(403).send("Please confirm your email");
+      }
+      if (existedCustomer.active === false) {
+        return res
+          .status(403)
+          .send("Your account has been disabled contact support");
       }
 
       //? Create JWTs
@@ -88,14 +94,13 @@ const customerController = {
         last_name,
         email,
         password,
-        valid_account: false, //? You can send a validation email here
-        active: false,
       });
 
       //await newCustomer.save();
 
       console.log("by ___ID", newCustomer._id);
       console.log("by ID", newCustomer.id);
+      
 
       //?Send Verification email
 
@@ -185,7 +190,9 @@ const customerController = {
         return res.status(404).send("The ID is required for Search");
       }
       const searchedCustomer = await CustomerModel.findById(id);
-
+      if (!searchedCustomer) {
+        return res.status(404).send("Customer with ID provided not found");
+      }
       return res.status(201).send(searchedCustomer);
     } catch (error) {
       console.log(error);
@@ -195,6 +202,7 @@ const customerController = {
   //? Validate Customer Email
 
   validateCustomer: async (req, res) => {
+    //TODO add a confirmation code ID is not code option
     try {
       const { id } = req.params;
 
@@ -202,16 +210,23 @@ const customerController = {
         return res.status(404).send("ID is required for Email Confirmation");
       }
 
-      const existedCustomer = await CustomerModel.findByIdAndUpdate(id, {
-        valid_account: true,
-        active: true,
-      });
+      const existedCustomer = await CustomerModel.findById(id);
 
       if (!existedCustomer) {
         return res.status(404).send("Customer with provided ID does not exist");
       }
 
-      return res.status(200).send("Account confirmed successfully");
+      if (existedCustomer.valid_account === true) {
+        return res.status(404).send("Your email already confirmed");
+      }
+
+      await CustomerModel.findByIdAndUpdate(id, {
+        valid_account: true,
+      });
+
+      return res
+        .status(200)
+        .send({ status: 200, msg: "Account confirmed successfully" });
     } catch (error) {
       console.log(error);
       return res.status(500).send({ error: error.message });

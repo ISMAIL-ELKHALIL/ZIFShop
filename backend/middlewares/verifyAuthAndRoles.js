@@ -6,7 +6,7 @@
 const jwt = require("jsonwebtoken");
 const { ACCESS_TOKEN_SECRET } = require("../config/env");
 
-const verifyJWT = (req, res, next) => {
+const verifyAuth = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -26,7 +26,7 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
-const checkRole = (req, res, next) => {
+const checkRoles = (req, res, next) => {
   if (req.user.role !== "Admin") {
     return res.status(403).send("Access denied: Should be an admin");
   }
@@ -34,6 +34,6 @@ const checkRole = (req, res, next) => {
 };
 
 module.exports = {
-  verifyJWT,
-  checkRole,
+  verifyAuth,
+  checkRoles,
 };

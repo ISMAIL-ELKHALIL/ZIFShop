@@ -1,1 +1,0 @@
-//TODO Decode JWT and compare Id to DB_ID 
