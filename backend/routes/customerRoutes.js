@@ -2,10 +2,6 @@ const router = require("express").Router();
 const { validateInputs } = require("../middlewares/validateInputs");
 const customerController = require("../controllers/customerController");
 const { rateLimit } = require("express-rate-limit");
-const {
-  handleInputErrors,
-  validateInput,
-} = require("../middlewares/customizedInputValidator");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -20,12 +16,7 @@ const limiter = rateLimit({
 router.post("/login", limiter, customerController.loginCustomer);
 
 //? Create a new Customer Account
-router.post(
-  "/",
-  handleInputErrors("customer"),
-  validateInput,
-  customerController.createCustomer
-);
+router.post("/", customerController.createCustomer);
 
 //? Get all Customers
 router.get("/", customerController.getAllCustomers);

@@ -2,15 +2,10 @@ const router = require("express").Router();
 const productController = require("../controllers/productController");
 const { validateInputs } = require("../middlewares/validateInputs");
 const { upload } = require("../middlewares/uploadImage");
-const {
-  handleInputErrors,
-  validateInput,
-} = require("../middlewares/customizedInputValidator");
+
 // Create a new product
 router.post(
   "/",
-  handleInputErrors("product"),
-  validateInput,
   upload.single("product_image"),
   productController.createProduct
 );

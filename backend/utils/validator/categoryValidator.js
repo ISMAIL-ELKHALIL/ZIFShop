@@ -40,7 +40,7 @@ const categoryValidator = (method) => {
           .notEmpty()
           .withMessage("Category name is required")
           .isString()
-          .withMessage("Category name must be a string"),
+          .withMessage("Category name must be a string")
         body("active")
           .optional()
           .notEmpty()
@@ -58,3 +58,4 @@ const categoryValidator = (method) => {
 };
 
 module.exports = { categoryValidator };
+n
